@@ -5,7 +5,7 @@ from telegram import ReplyKeyboardMarkup, Message, KeyboardButton
 from telegram.error import Unauthorized, BadRequest
 
 from Form import update_form, Form, find_form, delete_form
-from SubmittedForm import SubmittedForm, save_submission
+from SubmittedForm import SubmittedForm, save_submission, get_all_submitted_forms
 from telegram_bot import get_bot
 
 
