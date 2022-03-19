@@ -15,13 +15,9 @@ def lambda_handler(event, context):
 
 
 def lambda_handler_get_submitted_forms(event, context):
-    forms = get_all_submitted_forms()
-
-    response_body = {
-        'forms': forms
-    }
+    forms = list(get_all_submitted_forms())
 
     return {
-        "statusCode": 200,
-        "body": json.dumps(response_body)
+        'statusCode': 200,
+        'body': json.dumps({'forms': forms})
     }

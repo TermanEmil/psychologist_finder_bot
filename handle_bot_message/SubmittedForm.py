@@ -32,4 +32,15 @@ def save_submission(submission: SubmittedForm):
 def get_all_submitted_forms():
     paginator = get_db_client().get_paginator('scan')
     iterator = paginator.paginate(TableName=configs.submitted_forms_table_name)
-    return list(iterator)
+
+    for page in iterator:
+        for item in page['Items']:
+            yield SubmittedForm(
+                chat_id=item['chat_id']['N'],
+                person_type=item['person_type']['S'],
+                name=item['name']['S'],
+                age=item['age']['S'],
+                contact_means=item['contact_means']['S'],
+                contact=item['contact']['S'],
+                id=item['id']['S'],
+                submission_time=item['submission_time']['S'])
