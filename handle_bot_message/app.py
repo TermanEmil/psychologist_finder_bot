@@ -7,7 +7,7 @@ from telegram_bot import get_bot
 
 
 def lambda_handler(event, context):
-    update = telegram.Update.de_json(event.get_json(force=True), get_bot())
+    update = telegram.Update.de_json(json.loads(event), get_bot())
     handle_message(update)
 
     return {"statusCode": 204}

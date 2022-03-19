@@ -3,6 +3,8 @@ import sys
 import telegram
 from werkzeug.exceptions import Unauthorized, BadRequest
 
+from telegram_bot import get_bot
+
 
 def handle_message(update: telegram.Update):
     try:
@@ -16,4 +18,6 @@ def handle_message(update: telegram.Update):
 def handle_core(update: telegram.Update):
     if update.message.from_user.is_bot:
         return
+
+    get_bot().send_message(update.message.chat_id, update.message.text)
 
