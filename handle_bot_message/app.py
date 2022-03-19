@@ -20,5 +20,5 @@ def lambda_handler_get_submitted_forms(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({'forms': forms})
+        'body': json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8')
     }
