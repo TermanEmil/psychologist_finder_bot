@@ -1,10 +1,14 @@
 import json
 
+import telegram
+
+from message_handlers.main import handle_message
+from telegram_bot import get_bot
+
 
 def lambda_handler(event, context):
-    message = json.loads(event['body'])
-    if 'message' in message:
-        bot_message = message['message']
+    update = telegram.Update.de_json(event.get_json(force=True), get_bot())
+    handle_message(update)
 
     return {"statusCode": 204}
 
