@@ -1,7 +1,7 @@
 import sys
 
 import telegram
-from werkzeug.exceptions import Unauthorized, BadRequest
+from telegram.error import Unauthorized, BadRequest
 
 from telegram_bot import get_bot
 
