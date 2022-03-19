@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 
 import pytz
 
@@ -21,10 +21,14 @@ class Form:
     last_updated: str = datetime.now(tz=pytz.UTC).isoformat()
 
 
-_forms_table = get_db().Table(configs.forms_table_name)
+_forms_table: Any = None
 
 
 def get_forms_table():
+    global _forms_table
+
+    if _forms_table is None:
+        _forms_table = get_db().Table(configs.forms_table_name)
     return _forms_table
 
 
