@@ -26,7 +26,7 @@ Resources:
   PsychologistsGetHandler:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get_submitted_forms/
+      CodeUri: handle_bot_message/
       Handler: app.lambda_handler_get_submitted_forms
       Runtime: python3.8
       Architectures:
@@ -35,8 +35,8 @@ Resources:
         HandleBotMessage:
           Type: Api
           Properties:
-            Path: /handle_bot_message
-            Method: post
+            Path: /submitted_forms
+            Method: get
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
