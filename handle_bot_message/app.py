@@ -1,4 +1,5 @@
 import json
+from dataclasses import asdict
 
 import telegram
 
@@ -15,7 +16,7 @@ def lambda_handler(event, context):
 
 
 def lambda_handler_get_submitted_forms(event, context):
-    forms = list(get_all_submitted_forms())
+    forms = [asdict(form) for form in get_all_submitted_forms()]
 
     return {
         'statusCode': 200,
