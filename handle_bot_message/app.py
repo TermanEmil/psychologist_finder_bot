@@ -11,3 +11,7 @@ def lambda_handler(event, context):
     handle_message(update)
 
     return {"statusCode": 204}
+
+
+def lambda_handler_get_submitted_forms(event, context):
+    return {"statusCode": 205}
