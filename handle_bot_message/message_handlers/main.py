@@ -1,4 +1,5 @@
 import sys
+import re
 
 import telegram
 from telegram import ReplyKeyboardMarkup, Message, KeyboardButton
@@ -28,7 +29,7 @@ def handle_core(update: telegram.Update):
 
     if message.text == '/start':
         handle_start(message.chat_id)
-        request_who_you_are(message.chat_id)
+        request_person_type(message.chat_id)
         return
 
     form = find_form(message.chat_id)
@@ -38,7 +39,7 @@ def handle_core(update: telegram.Update):
 
     if form.stage == 0:
         if handle_who_i_am(form, message):
-            request_your_name(message.chat_id)
+            request_name(message.chat_id)
             return
 
     if form.stage == 1:
@@ -66,8 +67,6 @@ def handle_core(update: telegram.Update):
             request_to_submit_another_form(form.chat_id)
             return
 
-    request_to_start_a_forum(message.chat_id)
-
 
 def request_to_start_a_forum(chat_id: int):
     markup = ReplyKeyboardMarkup([['/start']], one_time_keyboard=True, resize_keyboard=True)
@@ -84,14 +83,14 @@ def handle_start(chat_id: int):
 person_types = ['Мешканець/ка мiста', 'Психолог']
 
 
-def request_who_you_are(chat_id: int):
+def request_person_type(chat_id: int):
     markup = ReplyKeyboardMarkup([person_types], one_time_keyboard=True, resize_keyboard=True)
     get_bot().send_message(chat_id, 'Хто ви?', reply_markup=markup)
 
 
 def handle_who_i_am(form: Form, message: Message):
     if not validate_message_text(message):
-        request_who_you_are(form.chat_id)
+        request_person_type(form.chat_id)
         return False
 
     form.person_type = message.text
@@ -100,12 +99,16 @@ def handle_who_i_am(form: Form, message: Message):
     return True
 
 
-def request_your_name(chat_id: int):
+def request_name(chat_id: int):
     get_bot().send_message(chat_id, 'Введiть своє iм’я', reply_markup=None)
 
 
 def handle_my_name(form: Form, message: Message):
     if not validate_message_text(message, 64):
+        return False
+
+    if re.match('[\\\\!|#$%&/()=?»«@£§€{}.-;\'<>_,0123456789]+', message.text):
+        get_bot().send_message(message.chat_id, 'Недійсний формат імені')
         return False
 
     form.name = message.text
@@ -242,7 +245,7 @@ def request_to_submit_another_form(chat_id):
 def validate_message_text(message: Message, max_size: int = 64):
     if message.text is None:
         get_bot().send_message(message.chat_id, 'Текст не обнаружен')
-        request_your_name(message.chat_id)
+        request_name(message.chat_id)
         return False
 
     if len(message.text) > max_size:
