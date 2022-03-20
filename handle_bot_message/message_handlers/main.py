@@ -1,4 +1,3 @@
-import os
 import re
 import sys
 
@@ -8,6 +7,7 @@ from telegram.error import Unauthorized, BadRequest
 
 from Form import update_form, Form, find_form, delete_form
 from SubmittedForm import SubmittedForm, save_submission
+from spreadsheets import add_to_spreadsheet
 from telegram_bot import get_bot
 
 
@@ -27,9 +27,6 @@ def handle_core(update: telegram.Update):
         return
 
     print(f"Handling message from chat_id: {message.chat_id}")
-
-    a = os.environ.get('TESTING_MAX_LENGTH')
-    print(a)
 
     if message.text == '/start':
         handle_start(message.chat_id)
@@ -219,7 +216,8 @@ def handle_form_submission(form: Form, message: Message):
     if message.text == 'Отмена':
         get_bot().send_message(form.chat_id, 'Отменено')
     elif message.text == 'Отправить':
-        submit_form(form)
+        submission = submit_form(form)
+        add_to_spreadsheet(submission)
         get_bot().send_message(form.chat_id, 'Спасибо за информацию')
 
     delete_form(form)
@@ -236,6 +234,7 @@ def submit_form(form: Form):
         contact=form.contact)
 
     save_submission(submission)
+    return submission
 
 
 def request_to_submit_another_form(chat_id):
