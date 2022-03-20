@@ -1,5 +1,6 @@
-import sys
+import os
 import re
+import sys
 
 import telegram
 from telegram import ReplyKeyboardMarkup, Message, KeyboardButton
@@ -26,6 +27,9 @@ def handle_core(update: telegram.Update):
         return
 
     print(f"Handling message from chat_id: {message.chat_id}")
+
+    a = os.environ.get('TESTING_MAX_LENGTH')
+    print(a)
 
     if message.text == '/start':
         handle_start(message.chat_id)
