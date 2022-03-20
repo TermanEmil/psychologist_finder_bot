@@ -36,11 +36,15 @@ def get_all_submitted_forms():
     for page in iterator:
         for item in page['Items']:
             yield SubmittedForm(
-                chat_id=item['chat_id']['N'],
-                person_type=item['person_type']['S'],
-                name=item['name']['S'],
-                age=item['age']['S'],
-                contact_means=item['contact_means']['S'],
-                contact=item['contact']['S'],
-                id=item['id']['S'],
-                submission_time=item['submission_time']['S'])
+                chat_id=any_key(item['chat_id']),
+                person_type=any_key(item['person_type']),
+                name=any_key(item['name']),
+                age=any_key(item['age']),
+                contact_means=any_key(item['contact_means']),
+                contact=any_key(item['contact']),
+                id=any_key(item['id']),
+                submission_time=any_key(item['submission_time']))
+
+
+def any_key(some_dict: dict):
+    return some_dict[list(some_dict.keys())[0]]
