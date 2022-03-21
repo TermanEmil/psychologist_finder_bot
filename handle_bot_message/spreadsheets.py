@@ -5,12 +5,10 @@ from datetime import datetime
 import gspread
 import pytz
 
-from SubmittedForm import SubmittedForm
+from SubmittedForm import SubmittedForm, get_all_submitted_forms
 
 
-def add_to_spreadsheet(form: SubmittedForm):
-    print(f"Adding to spreadsheets for chat_id: {form.chat_id}")
-
+def build_gspread_client() -> gspread.Client:
     base64_private_key = os.getenv('GSPREAD_PRIVATE_KEY').encode('utf-8')
     private_key = base64.decodebytes(base64_private_key).decode('utf-8')
 
@@ -27,16 +25,40 @@ def add_to_spreadsheet(form: SubmittedForm):
         "client_x509_cert_url": os.getenv('GSPREAD_CLIENT_X509_CERT_URL')
     }
 
-    gc = gspread.service_account_from_dict(credentials)
-    submissions = gc.open_by_key(os.environ.get('GSPREAD_SPREADSHEET_ID')).sheet1
-    submission_time = datetime.fromisoformat(form.submission_time)
+    return gspread.service_account_from_dict(credentials)
 
-    submissions.append_row([
+
+_client = build_gspread_client()
+
+
+def add_to_spreadsheet(form: SubmittedForm):
+    print(f"Adding to spreadsheets for chat_id: {form.chat_id}")
+    submissions = _client.open_by_key(os.environ.get('GSPREAD_SPREADSHEET_ID')).sheet1
+    submissions.append_row(_build_row(form))
+    print(f"Added to spreadsheets for chat_id: {form.chat_id}")
+
+
+def add_all_forms_to_spreadsheets():
+    submissions = _client.open_by_key(os.environ.get('GSPREAD_SPREADSHEET_ID')).sheet1
+    submissions.append_rows(list(_build_rows_for_all_submitted_forms()))
+
+
+def _build_rows_for_all_submitted_forms():
+    forms = sorted(
+        get_all_submitted_forms(),
+        key=lambda x: datetime.fromisoformat(x.submission_time).astimezone(pytz.timezone('Europe/Kiev')))
+
+    for form in forms:
+        yield _build_row(form)
+
+
+def _build_row(form: SubmittedForm):
+    submission_time = datetime.fromisoformat(form.submission_time)
+    return [
         form.person_type,
         form.name,
         form.age,
         form.contact_means,
         form.contact,
-        submission_time.astimezone(pytz.timezone('Europe/Kiev')).strftime('%H:%M:%S, %m/%d/%Y'),
-    ])
-    print(f"Added to spreadsheets for chat_id: {form.chat_id}")
+        submission_time.astimezone(pytz.timezone('Europe/Kiev')).strftime('%H:%M:%S, %d/%m/%Y'),
+    ]
