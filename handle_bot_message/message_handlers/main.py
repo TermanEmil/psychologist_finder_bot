@@ -12,6 +12,9 @@ from telegram_bot import get_bot
 
 
 def handle_message(update: telegram.Update):
+    if update is None or update.message is None:
+        return
+
     try:
         handle_core(update)
     except Unauthorized as e:
