@@ -23,7 +23,7 @@ def handle_message(update: telegram.Update):
 def handle_core(update: telegram.Update):
     message = update.message
 
-    if message.from_user.is_bot:
+    if message.from_user is None or message.from_user.is_bot:
         return
 
     print(f"Handling message from chat_id: {message.chat_id}")
