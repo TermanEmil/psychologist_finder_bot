@@ -15,6 +15,9 @@ def handle_message(update: telegram.Update):
     if update is None or update.message is None:
         return
 
+    if update.message.from_user is None or update.message.from_user.is_bot:
+        return
+
     try:
         handle_core(update)
     except Unauthorized as e:
@@ -25,9 +28,6 @@ def handle_message(update: telegram.Update):
 
 def handle_core(update: telegram.Update):
     message = update.message
-
-    if message.from_user is None or message.from_user.is_bot:
-        return
 
     print(f"Handling message from chat_id: {message.chat_id}")
 
