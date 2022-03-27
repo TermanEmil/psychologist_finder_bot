@@ -17,6 +17,8 @@ class SubmittedForm:
     contact_means: str
     contact: str
 
+    consultation_preference: str = None
+
     id: str = str(uuid.uuid4())
     submission_time: str = datetime.now(tz=pytz.UTC).isoformat()
 
@@ -42,9 +44,13 @@ def get_all_submitted_forms():
                 age=any_key(item['age']),
                 contact_means=any_key(item['contact_means']),
                 contact=any_key(item['contact']),
+                consultation_preference=any_key(item.get('consultation_preference')),
                 id=any_key(item['id']),
                 submission_time=any_key(item['submission_time']))
 
 
 def any_key(some_dict: dict):
-    return some_dict[list(some_dict.keys())[0]]
+    if some_dict is None:
+        return None
+
+    return list(some_dict.values())[0]
