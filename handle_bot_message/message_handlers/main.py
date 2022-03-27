@@ -63,10 +63,15 @@ def handle_core(update: telegram.Update):
 
     if form.stage == 4:
         if handle_contact(form, message):
+            if request_consultation_preference(form):
+                return
+
+    if form.stage == 5:
+        if handle_consultation_preference(form, message):
             request_form_submission(form)
             return
 
-    if form.stage == 5:
+    if form.stage == 6:
         if handle_form_submission(form, message):
             request_to_submit_another_form(form.chat_id)
             return
@@ -84,7 +89,9 @@ def handle_start(chat_id: int):
     update_form(Form(chat_id=chat_id))
 
 
-person_types = ['Мешканець/ка мiста', 'Психолог']
+patient_type = 'Мешканець/ка мiста'
+psychologist_type = 'Психолог'
+person_types = [patient_type, psychologist_type]
 
 
 def request_person_type(chat_id: int):
@@ -98,7 +105,7 @@ def handle_who_i_am(form: Form, message: Message):
         return False
 
     if message.text not in person_types:
-        get_bot().send_message(form.chat_id, 'Мешканець/ка мiста чи Психолог?', reply_markup=None)
+        get_bot().send_message(form.chat_id, f"{patient_type} чи {psychologist_type}?", reply_markup=None)
         request_person_type(form.chat_id)
         return False
 
@@ -204,13 +211,49 @@ def handle_contact(form: Form, message: Message):
     return False
 
 
+consultation_preferences = ['Чоловіком', 'Жінкою', 'Без різниці']
+
+
+def request_consultation_preference(form: Form):
+    if form.person_type == psychologist_type:
+        return False
+
+    markup = ReplyKeyboardMarkup([[*consultation_preferences]], one_time_keyboard=True, resize_keyboard=True)
+    get_bot().send_message(form.chat_id, 'Чи є побажання щоб Ваш терапевт був?', reply_markup=markup)
+    return True
+
+
+def handle_consultation_preference(form: Form, message: Message):
+    if form.person_type == psychologist_type:
+        form.stage += 1
+        update_form(form)
+        return True
+
+    if not validate_message_text(message) or message.text not in consultation_preferences:
+        request_consultation_preference(form)
+        return False
+
+    if message.text in consultation_preferences[0:2]:
+        form.consultation_preference = message.text
+
+    form.stage += 1
+    update_form(form)
+
+
 def request_form_submission(form: Form):
     markup = ReplyKeyboardMarkup([['Отправить', 'Отмена']], one_time_keyboard=True, resize_keyboard=True)
     contact = form.contact.replace('+', "\\+")
+
+    if form.consultation_preference is None:
+        consultation_preference = ''
+    else:
+        consultation_preference = f"Терапевт: _{form.consultation_preference}_\n"
+
     get_bot().send_message(
         form.chat_id,
         f"__{form.name}__ {form.age} років: _{form.person_type}_\n" +
         f"Спосіб зв’язку: _{form.contact_means} {contact}_\n" +
+        consultation_preference +
         f"Отправить?",
         reply_markup=markup,
         parse_mode='MarkdownV2')
@@ -239,7 +282,8 @@ def submit_form(form: Form):
         name=form.name,
         age=form.age,
         contact_means=form.contact_means,
-        contact=form.contact)
+        contact=form.contact,
+        consultation_preference=form.consultation_preference)
 
     save_submission(submission)
     return submission

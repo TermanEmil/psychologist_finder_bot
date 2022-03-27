@@ -60,5 +60,6 @@ def _build_row(form: SubmittedForm):
         form.age,
         form.contact_means,
         form.contact,
+        form.consultation_preference,
         submission_time.astimezone(pytz.timezone('Europe/Kiev')).strftime('%H:%M:%S, %d/%m/%Y'),
     ]

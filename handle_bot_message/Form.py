@@ -18,6 +18,7 @@ class Form:
     age: int = None
     contact_means: str = None
     contact: str = None
+    consultation_preference: str = None
     last_updated: str = datetime.now(tz=pytz.UTC).isoformat()
 
 
