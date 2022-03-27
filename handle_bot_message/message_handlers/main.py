@@ -97,6 +97,11 @@ def handle_who_i_am(form: Form, message: Message):
         request_person_type(form.chat_id)
         return False
 
+    if message.text not in person_types:
+        get_bot().send_message(form.chat_id, 'Мешканець/ка мiста чи Психолог?', reply_markup=None)
+        request_person_type(form.chat_id)
+        return False
+
     form.person_type = message.text
     form.stage += 1
     update_form(form)
