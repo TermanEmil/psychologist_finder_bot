@@ -211,7 +211,7 @@ def handle_contact(form: Form, message: Message):
     return False
 
 
-consultation_preferences = ['Чоловіком', 'Жінкою', 'Без різниці']
+consultation_preferences = ['Чоловік', 'Жінка', 'Без різниці']
 
 
 def request_consultation_preference(form: Form):
@@ -219,7 +219,7 @@ def request_consultation_preference(form: Form):
         return False
 
     markup = ReplyKeyboardMarkup([[*consultation_preferences]], one_time_keyboard=True, resize_keyboard=True)
-    get_bot().send_message(form.chat_id, 'Чи є побажання щоб Ваш терапевт був?', reply_markup=markup)
+    get_bot().send_message(form.chat_id, 'Чи є побажання щодо статi терапевта?', reply_markup=markup)
     return True
 
 
@@ -247,7 +247,7 @@ def request_form_submission(form: Form):
     if form.consultation_preference is None:
         consultation_preference = ''
     else:
-        consultation_preference = f"Терапевт: _{form.consultation_preference}_\n"
+        consultation_preference = f"Cтать терапевта: _{form.consultation_preference}_\n"
 
     get_bot().send_message(
         form.chat_id,
