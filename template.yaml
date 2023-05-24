@@ -13,7 +13,7 @@ Resources:
     Properties:
       CodeUri: handle_bot_message/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.10
       Architectures:
         - x86_64
       Events:
@@ -28,7 +28,7 @@ Resources:
     Properties:
       CodeUri: handle_bot_message/
       Handler: app.lambda_handler_get_submitted_forms
-      Runtime: python3.8
+      Runtime: python3.10
       Architectures:
         - x86_64
       Events:
