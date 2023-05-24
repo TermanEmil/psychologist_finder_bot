@@ -1,10 +1,19 @@
 import json
+import logging
 import os
 import sys
 from dataclasses import asdict
 
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters
+
+
+# Enable logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
 
 _application = None
 
@@ -25,15 +34,17 @@ def get_application(context) -> Application:
 async def lambda_handler(event, context):
     from message_handlers.main import handle_message
 
+    logging.info('Starting handling')
     application = get_application(context)
     application.add_handler(MessageHandler(filters.ALL, handle_message))
 
     try:
-        print(event['body'])
-        update = Update.de_json(json.loads(event['body']), application.bot)
+        body = event['body']
+        logging.info(f'EventBody: {body}')
+        update = Update.de_json(json.loads(body), application.bot)
         await application.process_update(update)
     except Exception as e:
-        print(e, file=sys.stderr)
+        logging.error(e)
         return {"statusCode": 500}
 
     return {"statusCode": 204}
