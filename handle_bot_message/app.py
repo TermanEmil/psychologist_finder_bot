@@ -47,7 +47,7 @@ async def lambda_handler(event, context):
     #     logging.error(e)
     #     return {"statusCode": 500}
 
-    return json.loads(json.dumps({"statusCode": 200}, default=str))
+    return "Hello world"
 
 
 def lambda_handler_get_submitted_forms(event, context):
