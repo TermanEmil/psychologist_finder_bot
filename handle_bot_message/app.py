@@ -31,22 +31,7 @@ def get_application(context) -> Application:
 
     return _application
 
-async def lambda_handler(event, context):
-    # from message_handlers.main import handle_message
-
-    logging.info('Starting handling')
-    # application = get_application(context)
-    # application.add_handler(MessageHandler(filters.ALL, handle_message))
-    #
-    # try:
-    #     body = event['body']
-    #     logging.info(f'EventBody: {body}')
-    #     update = Update.de_json(json.loads(body), application.bot)
-    #     await application.process_update(update)
-    # except Exception as e:
-    #     logging.error(e)
-    #     return {"statusCode": 500}
-
+def lambda_handler(event, context):
     return "Hello world"
 
 
