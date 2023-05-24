@@ -15,7 +15,7 @@ def get_application(context) -> Application:
         if ':Dev' in context.invoked_function_arn:
             environment = 'DEV'
         else:
-            environment = 'PROD'
+            environment = ''
 
         bot_token = os.environ.get(f"{environment}_TELEGRAM_BOT_TOKEN")
         _application = Application.builder().token(bot_token).build()
