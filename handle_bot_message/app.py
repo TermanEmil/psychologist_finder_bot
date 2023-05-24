@@ -1,10 +1,10 @@
-# import json
+import asyncio
+import json
 import logging
 import os
-# import sys
-# from dataclasses import asdict
-#
-# from telegram import Update
+from dataclasses import asdict
+
+from telegram import Update
 from telegram.ext import Application, MessageHandler, filters
 
 
@@ -21,10 +21,10 @@ def get_application(context) -> Application:
     global _application
 
     if _application is None:
-        if ':Dev' in context.invoked_function_arn:
-            environment = 'DEV'
-        else:
+        if ':Prod' in context.invoked_function_arn:
             environment = ''
+        else:
+            environment = 'DEV'
 
         bot_token = os.environ.get(f"{environment}_TELEGRAM_BOT_TOKEN")
         _application = Application.builder().token(bot_token).build()
@@ -32,14 +32,27 @@ def get_application(context) -> Application:
     return _application
 
 def lambda_handler(event, context):
-    return "Hello world"
+    from message_handlers.main import handle_message
+
+    logging.info('Starting handling')
+    application = get_application(context)
+    application.add_handler(MessageHandler(filters.ALL, handle_message))
+
+    try:
+        update = Update.de_json(json.loads(event['body']), application.bot)
+        asyncio.get_event_loop().run_until_complete(application.process_update(update))
+    except Exception as e:
+        logging.error(e)
+        return {"statusCode": 500}
+
+    return {"statusCode": 204}
 
 
 def lambda_handler_get_submitted_forms(event, context):
-    # from SubmittedForm import get_all_submitted_forms
+    from SubmittedForm import get_all_submitted_forms
 
-    # forms = [asdict(form) for form in get_all_submitted_forms()]
+    forms = [asdict(form) for form in get_all_submitted_forms()]
     return {
         'statusCode': 200,
-        # 'body': json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8')
+        'body': json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8')
     }
