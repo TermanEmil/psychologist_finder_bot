@@ -17,12 +17,8 @@ async def lambda_handler(event, context):
 
     application.add_handler(MessageHandler(filters.ALL, handle_message))
 
-    try:
-        update = Update.de_json(json.loads(event['body']), bot)
-        await application.process_update(update)
-    except Exception as e:
-        print(e, file=sys.stderr)
-        return {"statusCode": 500}
+    update = Update.de_json(json.loads(event['body']), bot)
+    await application.process_update(update)
 
     return {"statusCode": 204}
 
