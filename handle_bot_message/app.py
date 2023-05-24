@@ -1,10 +1,10 @@
-import json
+# import json
 import logging
 import os
-import sys
-from dataclasses import asdict
-
-from telegram import Update
+# import sys
+# from dataclasses import asdict
+#
+# from telegram import Update
 from telegram.ext import Application, MessageHandler, filters
 
 
@@ -51,10 +51,10 @@ async def lambda_handler(event, context):
 
 
 def lambda_handler_get_submitted_forms(event, context):
-    from SubmittedForm import get_all_submitted_forms
+    # from SubmittedForm import get_all_submitted_forms
 
-    forms = [asdict(form) for form in get_all_submitted_forms()]
+    # forms = [asdict(form) for form in get_all_submitted_forms()]
     return {
         'statusCode': 200,
-        'body': json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8')
+        # 'body': json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8')
     }
