@@ -3,22 +3,38 @@ import os
 import sys
 from dataclasses import asdict
 
-from telegram import Bot, Update
+from telegram import Update
 from telegram.ext import Application, MessageHandler, filters
 
-bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
-bot = Bot(token=bot_token)
+_application = None
 
-application = Application.builder().token(bot_token).build()
+def get_application(context) -> Application:
+    global _application
 
+    if _application is None:
+        if ':Dev' in context.invoked_function_arn:
+            environment = 'DEV'
+        else:
+            environment = 'PROD'
+
+        bot_token = os.environ.get(f"{environment}_TELEGRAM_BOT_TOKEN")
+        _application = Application.builder().token(bot_token).build()
+
+    return _application
 
 async def lambda_handler(event, context):
     from message_handlers.main import handle_message
 
+    application = get_application(context)
     application.add_handler(MessageHandler(filters.ALL, handle_message))
 
-    update = Update.de_json(json.loads(event['body']), bot)
-    await application.process_update(update)
+    try:
+        print(event['body'])
+        update = Update.de_json(json.loads(event['body']), application.bot)
+        await application.process_update(update)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        return {"statusCode": 500}
 
     return {"statusCode": 204}
 

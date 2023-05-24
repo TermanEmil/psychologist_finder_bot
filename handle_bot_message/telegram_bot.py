@@ -12,3 +12,4 @@ def get_bot() -> telegram.Bot:
     if _bot is None:
         _bot = telegram.Bot(os.environ.get("TELEGRAM_BOT_TOKEN"))
     return _bot
+
