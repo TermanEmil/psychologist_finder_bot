@@ -1,16 +1,16 @@
 import re
 import sys
 
-import telegram
 from telegram import ReplyKeyboardMarkup, Message, KeyboardButton, Update
 from telegram.error import Forbidden, BadRequest
+from telegram.ext import ContextTypes
 
 from Form import update_form, Form, find_form, delete_form
 from SubmittedForm import SubmittedForm, save_submission
 from spreadsheets import add_to_spreadsheet
 
 
-async def handle_message(update: telegram.Update):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update is None or update.message is None:
         return
 
