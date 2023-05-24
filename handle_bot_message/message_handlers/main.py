@@ -2,16 +2,15 @@ import re
 import sys
 
 import telegram
-from telegram import ReplyKeyboardMarkup, Message, KeyboardButton
-from telegram.error import Unauthorized, BadRequest
+from telegram import ReplyKeyboardMarkup, Message, KeyboardButton, Update
+from telegram.error import Forbidden, BadRequest
 
 from Form import update_form, Form, find_form, delete_form
 from SubmittedForm import SubmittedForm, save_submission
 from spreadsheets import add_to_spreadsheet
-from telegram_bot import get_bot
 
 
-def handle_message(update: telegram.Update):
+async def handle_message(update: telegram.Update):
     if update is None or update.message is None:
         return
 
@@ -19,70 +18,68 @@ def handle_message(update: telegram.Update):
         return
 
     try:
-        handle_core(update)
-    except Unauthorized as e:
+        await handle_core(update)
+    except Forbidden as e:
         print(f"Unauthorized: {e}", file=sys.stderr)
     except BadRequest as e:
         print(f"Bad request: {e}", file=sys.stderr)
 
 
-def handle_core(update: telegram.Update):
+async def handle_core(update: Update):
     message = update.message
 
     print(f"Handling message from chat_id: {message.chat_id}")
 
     if message.text == '/start':
         handle_start(message.chat_id)
-        request_person_type(message.chat_id)
+        await request_person_type(update)
         return
 
     form = find_form(message.chat_id)
     if form is None:
-        request_to_start_a_forum(message.chat_id)
+        await request_to_start_a_forum(update)
         return
 
     if form.stage == 0:
-        if handle_who_i_am(form, message):
-            request_name(message.chat_id)
+        if await handle_who_i_am(form, update):
+            await request_name(update.message)
             return
 
     if form.stage == 1:
-        if handle_my_name(form, message):
-            request_age(message.chat_id)
+        if await handle_my_name(form, message):
+            await request_age(message)
             return
 
     if form.stage == 2:
-        if handle_age(form, message):
-            request_contact_means(message.chat_id)
+        if await handle_age(form, message):
+            await request_contact_means(message)
             return
 
     if form.stage == 3:
-        if handle_contact_means(form, message):
-            request_contact(form)
+        if await handle_contact_means(form, message):
+            await request_contact(form, message)
             return
 
     if form.stage == 4:
-        if handle_contact(form, message):
-            if request_consultation_preference(form):
+        if await handle_contact(form, message):
+            if await request_consultation_preference(form, message):
                 return
 
     if form.stage == 5:
-        if handle_consultation_preference(form, message):
-            request_form_submission(form)
+        if await handle_consultation_preference(form, message):
+            await request_form_submission(form, message)
             return
 
     if form.stage == 6:
-        if handle_form_submission(form, message):
-            request_to_submit_another_form(form.chat_id)
+        if await handle_form_submission(form, message):
+            await request_to_submit_another_form(message)
             return
 
 
-def request_to_start_a_forum(chat_id: int):
+async def request_to_start_a_forum(update: Update):
     markup = ReplyKeyboardMarkup([['/start']], one_time_keyboard=True, resize_keyboard=True)
-    get_bot().send_message(
-        chat_id,
-        'Нажмите /start чтобы заполнить форму',
-        reply_markup=markup)
+    press_start_to_fill_the_form = 'Нажмите /start чтобы заполнить форму'
+    await update.message.reply_text(press_start_to_fill_the_form, reply_markup=markup)
 
 
 def handle_start(chat_id: int):
@@ -94,37 +91,40 @@ psychologist_type = 'Психолог'
 person_types = [patient_type, psychologist_type]
 
 
-def request_person_type(chat_id: int):
+async def request_person_type(update: Update):
     markup = ReplyKeyboardMarkup([person_types], one_time_keyboard=True, resize_keyboard=True)
-    get_bot().send_message(chat_id, 'Хто ви?', reply_markup=markup)
+    who_are_you = 'Хто ви?'
+    await update.message.reply_text(who_are_you, reply_markup=markup)
 
 
-def handle_who_i_am(form: Form, message: Message):
-    if not validate_message_text(message):
-        request_person_type(form.chat_id)
+async def handle_who_i_am(form: Form, update: Update):
+    if not validate_message_text(update.message):
+        await request_person_type(update)
         return False
 
-    if message.text not in person_types:
-        get_bot().send_message(form.chat_id, f"{patient_type} чи {psychologist_type}?", reply_markup=None)
-        request_person_type(form.chat_id)
+    if update.message.text not in person_types:
+        await update.message.reply_text(f"{patient_type} чи {psychologist_type}?", reply_markup=None)
+        await request_person_type(update)
         return False
 
-    form.person_type = message.text
+    form.person_type = update.message.text
     form.stage += 1
     update_form(form)
     return True
 
 
-def request_name(chat_id: int):
-    get_bot().send_message(chat_id, 'Введiть своє iм’я', reply_markup=None)
+async def request_name(message: Message):
+    enter_your_name = 'Введiть своє iм’я'
+    await message.reply_text(enter_your_name, reply_markup=None)
 
 
-def handle_my_name(form: Form, message: Message):
-    if not validate_message_text(message, 64):
+async def handle_my_name(form: Form, message: Message):
+    if not await validate_message_text(message, 64):
         return False
 
     if re.match('[\\\\!|#$%&/()=?»«@£§€{}.-;\'<>_,0123456789]+', message.text):
-        get_bot().send_message(message.chat_id, 'Недійсний формат імені')
+        invalid_name_format = 'Недійсний формат імені'
+        await message.reply_text(invalid_name_format)
         return False
 
     form.name = message.text
@@ -133,17 +133,19 @@ def handle_my_name(form: Form, message: Message):
     return True
 
 
-def request_age(chat_id: int):
-    get_bot().send_message(chat_id, 'Вкажiть ваш вiк', reply_markup=None)
+async def request_age(message: Message):
+    enter_your_age = 'Вкажiть ваш вiк'
+    await message.reply_text(enter_your_age, reply_markup=None)
 
 
-def handle_age(form: Form, message: Message):
-    if not validate_message_text(message):
-        request_age(message.chat_id)
+async def handle_age(form: Form, message: Message):
+    if not await validate_message_text(message):
+        await request_age(message)
         return False
 
     if not message.text.isnumeric():
-        get_bot().send_message(message.chat_id, 'Недійсний формат віку')
+        invalid_age_format = 'Недійсний формат віку'
+        await message.reply_text(invalid_age_format)
         return False
 
     form.age = message.text
@@ -162,18 +164,20 @@ contact_means = {
 }
 
 
-def request_contact_means(chat_id: int):
+async def request_contact_means(message: Message):
     markup = ReplyKeyboardMarkup([list(contact_means.values())], one_time_keyboard=True, resize_keyboard=True)
-    get_bot().send_message(chat_id, 'Напишiть найзручніший спосіб зв’язку', reply_markup=markup)
+    enter_a_way_to_contact_you = 'Напишiть найзручніший спосіб зв’язку'
+    await message.reply_text(enter_a_way_to_contact_you, reply_markup=markup)
 
 
-def handle_contact_means(form: Form, message: Message):
-    if not validate_message_text(message):
-        request_contact_means(message.chat_id)
+async def handle_contact_means(form: Form, message: Message):
+    if not await validate_message_text(message):
+        await request_contact_means(message)
         return False
 
     if message.text == contact_means['other']:
-        get_bot().send_message(message.chat_id, 'Як ви хочете, щоб з вами зв’язалися?')
+        how_would_you_like_to_be_contacted = 'Як ви хочете, щоб з вами зв’язалися?'
+        await message.reply_text(how_would_you_like_to_be_contacted)
         return False
 
     form.contact_means = message.text
@@ -182,21 +186,23 @@ def handle_contact_means(form: Form, message: Message):
     return True
 
 
-def request_contact(form: Form):
+async def request_contact(form: Form, message: Message):
     if form.contact_means == contact_means['telegram']:
-        request_telegram_contact(form.chat_id)
+        await request_telegram_contact(message)
     else:
-        get_bot().send_message(form.chat_id, f"Введіть ваш {form.contact_means}")
+        enter_your_contact_means = f"Введіть ваш {form.contact_means}"
+        await message.reply_text(enter_your_contact_means)
 
 
-def request_telegram_contact(chat_id: int):
-    contact_button = KeyboardButton(text="Поділіться моїм контактом", request_contact=True)
+async def request_telegram_contact(message: Message):
+    send_my_telegram_contact = 'Поділіться моїм контактом'
+    contact_button = KeyboardButton(text=send_my_telegram_contact, request_contact=True)
     markup = ReplyKeyboardMarkup([[contact_button]], one_time_keyboard=True, resize_keyboard=True)
-    get_bot().send_message(chat_id, 'Поділіться моїм контактом', reply_markup=markup)
+    await message.reply_text(send_my_telegram_contact, reply_markup=markup)
 
 
-def handle_contact(form: Form, message: Message):
-    if message.contact or validate_message_text(message):
+async def handle_contact(form: Form, message: Message):
+    if message.contact or await validate_message_text(message):
         if message.contact:
             contact = message.contact.phone_number
         else:
@@ -207,30 +213,31 @@ def handle_contact(form: Form, message: Message):
         update_form(form)
         return True
 
-    request_contact(form)
+    await request_contact(form, message)
     return False
 
 
 consultation_preferences = ['Чоловік', 'Жінка', 'Без різниці']
 
 
-def request_consultation_preference(form: Form):
+async def request_consultation_preference(form: Form, message: Message):
     if form.person_type == psychologist_type:
         return False
 
     markup = ReplyKeyboardMarkup([[*consultation_preferences]], one_time_keyboard=True, resize_keyboard=True)
-    get_bot().send_message(form.chat_id, 'Чи є побажання щодо статi терапевта?', reply_markup=markup)
+    do_you_have_preferences_for_therapist_gender = 'Чи є побажання щодо статi терапевта?'
+    await message.reply_text(do_you_have_preferences_for_therapist_gender, reply_markup=markup)
     return True
 
 
-def handle_consultation_preference(form: Form, message: Message):
+async def handle_consultation_preference(form: Form, message: Message):
     if form.person_type == psychologist_type:
         form.stage += 1
         update_form(form)
         return True
 
-    if not validate_message_text(message) or message.text not in consultation_preferences:
-        request_consultation_preference(form)
+    if not await validate_message_text(message) or message.text not in consultation_preferences:
+        await request_consultation_preference(form, message)
         return False
 
     if message.text in consultation_preferences[0:2]:
@@ -240,7 +247,7 @@ def handle_consultation_preference(form: Form, message: Message):
     update_form(form)
 
 
-def request_form_submission(form: Form):
+async def request_form_submission(form: Form, message: Message):
     markup = ReplyKeyboardMarkup([['Отправить', 'Отмена']], one_time_keyboard=True, resize_keyboard=True)
     contact = form.contact.replace('+', "\\+")
 
@@ -249,8 +256,7 @@ def request_form_submission(form: Form):
     else:
         consultation_preference = f"Cтать терапевта: _{form.consultation_preference}_\n"
 
-    get_bot().send_message(
-        form.chat_id,
+    await message.reply_text(
         f"__{form.name}__ {form.age} років: _{form.person_type}_\n" +
         f"Спосіб зв’язку: _{form.contact_means} {contact}_\n" +
         consultation_preference +
@@ -259,17 +265,17 @@ def request_form_submission(form: Form):
         parse_mode='MarkdownV2')
 
 
-def handle_form_submission(form: Form, message: Message):
+async def handle_form_submission(form: Form, message: Message):
     if message.text not in ['Отправить', 'Отмена']:
-        request_form_submission(form)
+        await request_form_submission(form, message)
         return False
 
     if message.text == 'Отмена':
-        get_bot().send_message(form.chat_id, 'Отменено')
+        await message.reply_text('Отменено')
     elif message.text == 'Отправить':
         submission = submit_form(form)
         add_to_spreadsheet(submission)
-        get_bot().send_message(form.chat_id, 'Спасибо за информацию')
+        await message.reply_text('Спасибо за информацию')
 
     delete_form(form)
     return True
@@ -289,22 +295,20 @@ def submit_form(form: Form):
     return submission
 
 
-def request_to_submit_another_form(chat_id):
+async def request_to_submit_another_form(message: Message):
     markup = ReplyKeyboardMarkup([['/start']], one_time_keyboard=True, resize_keyboard=True)
-    get_bot().send_message(
-        chat_id,
-        'Заповнити форму ще раз?',
-        reply_markup=markup)
+    await message.reply_text('Заповнити форму ще раз?', reply_markup=markup)
 
 
-def validate_message_text(message: Message, max_size: int = 64):
+async def validate_message_text(message: Message, max_size: int = 64):
     if message.text is None:
-        get_bot().send_message(message.chat_id, 'Текст не обнаружен')
-        request_name(message.chat_id)
+        no_text_detected = 'Текст не обнаружен'
+        await message.reply_text(no_text_detected)
+        await request_name(message)
         return False
 
     if len(message.text) > max_size:
-        get_bot().send_message(message.chat_id, f"Сообщение не может превышать {max_size} символов")
+        await message.reply_text(f"Сообщение не может превышать {max_size} символов")
         return False
 
     return True
