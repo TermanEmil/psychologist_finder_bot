@@ -27,7 +27,7 @@ def get_application(context) -> Application:
     return _application
 
 def lambda_handler(event, context):
-    from message_handlers.main import handle_message
+    # from message_handlers.main import handle_message
 
     print('Starting handling')
     # application = get_application(context)
