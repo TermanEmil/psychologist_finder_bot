@@ -32,22 +32,22 @@ def get_application(context) -> Application:
     return _application
 
 async def lambda_handler(event, context):
-    from message_handlers.main import handle_message
+    # from message_handlers.main import handle_message
 
     logging.info('Starting handling')
-    application = get_application(context)
-    application.add_handler(MessageHandler(filters.ALL, handle_message))
+    # application = get_application(context)
+    # application.add_handler(MessageHandler(filters.ALL, handle_message))
+    #
+    # try:
+    #     body = event['body']
+    #     logging.info(f'EventBody: {body}')
+    #     update = Update.de_json(json.loads(body), application.bot)
+    #     await application.process_update(update)
+    # except Exception as e:
+    #     logging.error(e)
+    #     return {"statusCode": 500}
 
-    try:
-        body = event['body']
-        logging.info(f'EventBody: {body}')
-        update = Update.de_json(json.loads(body), application.bot)
-        await application.process_update(update)
-    except Exception as e:
-        logging.error(e)
-        return {"statusCode": 500}
-
-    return {"statusCode": 204}
+    return json.loads(json.dumps({"statusCode": 200}, default=str))
 
 
 def lambda_handler_get_submitted_forms(event, context):
