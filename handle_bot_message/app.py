@@ -21,6 +21,8 @@ def get_application(context) -> Application:
     global _application
 
     if _application is None:
+        logger.info('Acquiring Telegram Bot connection')
+
         if ':Prod' in context.invoked_function_arn:
             environment = ''
         else:
@@ -28,6 +30,7 @@ def get_application(context) -> Application:
 
         bot_token = os.environ.get(f"{environment}_TELEGRAM_BOT_TOKEN")
         _application = Application.builder().token(bot_token).build()
+        logger.info('Finished acquiring Telegram Bot connection')
 
     return _application
 
