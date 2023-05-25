@@ -36,14 +36,16 @@ def lambda_handler(event, context):
 def lambda_handler_get_submitted_forms(event, context):
     from SubmittedForm import get_paginated_submitted_forms
 
-    query = event.query_string_parameters
-    if query and query.page_size and query.page_size.isdecimal():
-        page_size = int(query.page_size)
+    query = event['QuerySringParameters']
+    page_size_key = 'pageSize'
+    if page_size_key in query and query[page_size_key].isdecimal():
+        page_size = int(query[page_size_key])
     else:
         page_size = 50
 
-    if query and query['StartingToken']:
-        starting_token = query['StartingToken']
+    starting_token_key = 'startingToken'
+    if query[starting_token_key]:
+        starting_token = query[starting_token_key]
     else:
         starting_token = None
 
