@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import sys
 from dataclasses import asdict
 
 from telegram import Update, Bot
@@ -15,18 +16,22 @@ def get_bot_token(context) -> str:
     return os.environ.get(f"{environment}_TELEGRAM_BOT_TOKEN")
 
 
-def lambda_handler(event, context):
+async def handle_async(event, context):
     from message_handlers.main import handle_message
 
     try:
-        with Bot(token=get_bot_token(context)) as bot:
+        async with Bot(token=get_bot_token(context)) as bot:
             update = Update.de_json(json.loads(event['body']), bot)
-            asyncio.get_event_loop().run_until_complete(handle_message(update, None))
+            await handle_message(update, None)
     except Exception as e:
-        print(e)
+        print(e, file=sys.stderr)
         return {"statusCode": 500}
 
     return {"statusCode": 204}
+
+
+def lambda_handler(event, context):
+    return asyncio.get_event_loop().run_until_complete(handle_async(event, context))
 
 
 def lambda_handler_get_submitted_forms(event, context):
