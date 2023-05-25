@@ -36,15 +36,22 @@ def lambda_handler(event, context):
 def lambda_handler_get_submitted_forms(event, context):
     from SubmittedForm import get_paginated_submitted_forms
 
-    print('event:', json.dumps(event))
+    # print('event:', json.dumps(event))
     query = event['queryStringParameters']
     page_size_key = 'pageSize'
+    default_page_size = 50
     if page_size_key in query and query[page_size_key].isdecimal():
         page_size = int(query[page_size_key])
+        if page_size <= 0 or page_size > 5000:
+            return {
+                'statusCode': 404,
+                'body': 'Invalid page size.'.encode('utf8')
+            }
     else:
-        page_size = 50
+        page_size = default_page_size
 
-    if 'startingToken' in query:
+    starting_token_key = 'startingToken'
+    if starting_token_key in query and query[starting_token_key]:
         starting_token = query['startingToken']
     else:
         starting_token = None
