@@ -33,29 +33,30 @@ def lambda_handler(event, context):
     return asyncio.get_event_loop().run_until_complete(handle_async(event, context))
 
 
+def extract_query_params(event):
+    page_size = 50
+    starting_token = None
+
+    if 'queryStringParameters' in event:
+        query = event['queryStringParameters']
+        page_size_key = 'pageSize'
+        if page_size_key in query and query[page_size_key].isdecimal():
+            raw_page_size = int(query[page_size_key])
+            if raw_page_size > 0 and page_size <= 5000:
+                page_size = raw_page_size
+
+        starting_token_key = 'startingToken'
+        if starting_token_key in query and query[starting_token_key]:
+            starting_token = query['startingToken']
+
+    return page_size, starting_token
+
+
 def lambda_handler_get_submitted_forms(event, context):
     from SubmittedForm import get_paginated_submitted_forms
 
     # print('event:', json.dumps(event))
-    query = event['queryStringParameters']
-    page_size_key = 'pageSize'
-    default_page_size = 50
-    if page_size_key in query and query[page_size_key].isdecimal():
-        page_size = int(query[page_size_key])
-        if page_size <= 0 or page_size > 5000:
-            return {
-                'statusCode': 400,
-                'body': 'Invalid page size.'.encode('utf8')
-            }
-    else:
-        page_size = default_page_size
-
-    starting_token_key = 'startingToken'
-    if starting_token_key in query and query[starting_token_key]:
-        starting_token = query['startingToken']
-    else:
-        starting_token = None
-
+    page_size, starting_token = extract_query_params(event)
     result = get_paginated_submitted_forms(starting_token, page_size)
     return {
         'statusCode': 200,
