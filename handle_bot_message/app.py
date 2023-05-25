@@ -36,7 +36,7 @@ def lambda_handler(event, context):
 def lambda_handler_get_submitted_forms(event, context):
     from SubmittedForm import get_paginated_submitted_forms
 
-    # print('event:', json.dumps(event))
+    print('event:', json.dumps(event))
     query = event['queryStringParameters']
     page_size_key = 'pageSize'
     if page_size_key in query and query[page_size_key].isdecimal():
