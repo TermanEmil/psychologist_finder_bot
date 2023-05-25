@@ -49,6 +49,19 @@ def get_all_submitted_forms():
                 submission_time=any_key(item['submission_time']))
 
 
+def get_paginated_submitted_forms(starting_token: str, page_size: int):
+    paginator = get_db_client().get_paginator('scan').paginate(
+        TableName=configs.submitted_forms_table_name,
+        PaginationConfig={
+            "PageSize": page_size,
+            "MaxItems": page_size,
+            "StartingToken": starting_token
+        }
+    )
+
+    return paginator.build_full_result()
+
+
 def any_key(some_dict: dict):
     if some_dict is None:
         return None

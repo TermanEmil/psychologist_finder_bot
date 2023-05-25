@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 import sys
-from dataclasses import asdict
 
 from telegram import Update, Bot
 
@@ -35,10 +34,21 @@ def lambda_handler(event, context):
 
 
 def lambda_handler_get_submitted_forms(event, context):
-    from SubmittedForm import get_all_submitted_forms
+    from SubmittedForm import get_paginated_submitted_forms
 
-    forms = [asdict(form) for form in get_all_submitted_forms()]
+    query = event.query_string_parameters
+    if query and query.page_size and query.page_size.isdecimal():
+        page_size = int(query.page_size)
+    else:
+        page_size = 50
+
+    if query and query['StartingToken']:
+        starting_token = query['StartingToken']
+    else:
+        starting_token = None
+
+    result = get_paginated_submitted_forms(starting_token, page_size)
     return {
         'statusCode': 200,
-        'body': json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8')
+        'body': json.dumps(result, ensure_ascii=False).encode('utf8')
     }
