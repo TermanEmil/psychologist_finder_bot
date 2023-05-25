@@ -44,7 +44,7 @@ def lambda_handler_get_submitted_forms(event, context):
         page_size = int(query[page_size_key])
         if page_size <= 0 or page_size > 5000:
             return {
-                'statusCode': 404,
+                'statusCode': 400,
                 'body': 'Invalid page size.'.encode('utf8')
             }
     else:
