@@ -1,6 +1,7 @@
 import os
 
 import boto3
+from botocore.client import BaseClient
 
 import migrations
 
@@ -18,7 +19,7 @@ def get_db():
     return dynamodb
 
 
-def get_db_client():
+def get_db_client() -> BaseClient:
     return boto3.client(
         'dynamodb',
         region_name='eu-central-1',

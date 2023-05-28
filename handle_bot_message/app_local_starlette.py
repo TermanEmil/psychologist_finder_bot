@@ -1,9 +1,15 @@
 import asyncio
+import json
 import logging
 import os
 
 import uvicorn
 from starlette.applications import Starlette
+from starlette.datastructures import QueryParams
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
@@ -13,7 +19,10 @@ from telegram.ext import (
     filters, MessageHandler
 )
 
+from SubmittedForm import get_paginated_submitted_forms
+from consts import patient_type, person_types_keys
 from message_handlers.main import handle_message
+from query_utils import extract_query_params
 
 # Enable logging
 logging.basicConfig(
@@ -38,17 +47,29 @@ async def main() -> None:
     await application.bot.set_webhook(url=f"{url}/telegram")
 
     # Set up webserver
-    async def telegram(request: Request) -> Response:
+    async def telegram_endpoint(request: Request) -> Response:
         """Handle incoming Telegram updates by putting them into the `update_queue`"""
         await application.update_queue.put(
             Update.de_json(data=await request.json(), bot=application.bot)
         )
         return Response()
 
+    async def get_submitted_forms_endpoint(request: Request) -> Response:
+        page_size, starting_token, person_type = extract_query_params(dict(request.query_params))
+        result = get_paginated_submitted_forms(starting_token, page_size, person_type)
+        body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        return Response(status_code=200, content=body)
+
+    middleware = [
+        Middleware(CORSMiddleware, allow_origins=['*'])
+    ]
+
     starlette_app = Starlette(
         routes=[
-            Route("/telegram", telegram, methods=["POST"]),
-        ]
+            Route("/telegram", telegram_endpoint, methods=["POST"]),
+            Route("/submitted_forms", get_submitted_forms_endpoint, methods=["GET"])
+        ],
+        middleware=middleware
     )
     webserver = uvicorn.Server(
         config=uvicorn.Config(

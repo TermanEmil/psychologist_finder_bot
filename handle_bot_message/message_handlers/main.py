@@ -7,6 +7,7 @@ from telegram.ext import ContextTypes
 
 from Form import update_form, Form, find_form, delete_form
 from SubmittedForm import SubmittedForm, save_submission
+from consts import person_types, patient_type, psychologist_type
 from spreadsheets import add_to_spreadsheet
 
 
@@ -84,11 +85,6 @@ async def request_to_start_a_forum(update: Update):
 
 def handle_start(chat_id: int):
     update_form(Form(chat_id=chat_id))
-
-
-patient_type = 'Мешканець/ка мiста'
-psychologist_type = 'Психолог'
-person_types = [patient_type, psychologist_type]
 
 
 async def request_person_type(update: Update):
