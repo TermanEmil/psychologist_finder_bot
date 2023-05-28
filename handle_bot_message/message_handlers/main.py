@@ -8,8 +8,6 @@ from telegram.ext import ContextTypes
 from Form import update_form, Form, find_form, delete_form
 from SubmittedForm import SubmittedForm, save_submission
 from consts import person_types, patient_type, psychologist_type
-from spreadsheets import add_to_spreadsheet
-
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update is None or update.message is None:
@@ -262,6 +260,8 @@ async def request_form_submission(form: Form, message: Message):
 
 
 async def handle_form_submission(form: Form, message: Message):
+    from spreadsheets import add_to_spreadsheet
+
     if message.text not in ['Отправить', 'Отмена']:
         await request_form_submission(form, message)
         return False

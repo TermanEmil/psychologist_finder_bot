@@ -5,11 +5,8 @@ import os
 
 import uvicorn
 from starlette.applications import Starlette
-from starlette.datastructures import QueryParams
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
@@ -20,7 +17,6 @@ from telegram.ext import (
 )
 
 from SubmittedForm import get_paginated_submitted_forms
-from consts import patient_type, person_types_keys
 from message_handlers.main import handle_message
 from query_utils import extract_query_params
 
