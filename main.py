@@ -42,10 +42,9 @@ def get_all_submissions_handler(request):
     async def handle_async(request):
         from src.SubmittedForm import get_all_submitted_forms
 
-        forms = [asdict(form) for form in get_all_submitted_forms()]
         return {
             'statusCode': 200,
-            'body': json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8')
+            'body': json.dumps({'forms': list(get_all_submitted_forms())}, ensure_ascii=False).encode('utf8')
         }
 
     return loop.run_until_complete(handle_async(request_json))

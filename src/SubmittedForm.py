@@ -1,8 +1,10 @@
-import uuid
+import math
 from dataclasses import dataclass, asdict
 from datetime import datetime
+from typing import Optional
 
 import pytz
+from bson import ObjectId
 
 from src.auxiliary import db
 from src.auxiliary.stopwatch import Stopwatch
@@ -17,10 +19,10 @@ class SubmittedForm:
     contact_means: str
     contact: str
 
-    consultation_preference: str = None
+    consultation_preference: Optional[str] = None
+    _id: Optional[ObjectId] = None
 
     submission_time: str = datetime.now(tz=pytz.UTC).isoformat()
-    id: str = str(uuid.uuid4())
 
 
 def save_submission(submission: SubmittedForm):
@@ -30,12 +32,24 @@ def save_submission(submission: SubmittedForm):
 
 
 def get_all_submitted_forms():
-    with Stopwatch('save_submission'):
-        with db.get_db_client() as client:
-            items = client[db.DB_NAME][db.SUBMITTED_FORM_DATA_NAME].find({})
-            for item in items:
-                item.pop('_id')
-                yield SubmittedForm(**item)
+    with db.get_db_client() as client:
+        items = client[db.DB_NAME][db.SUBMITTED_FORM_DATA_NAME].find({})
+
+        for item in items:
+            for k, v in item.items():
+                if type(item[k]) == float and math.isnan(item[k]):
+                    item[k] = ''
+
+            yield {
+                'id': str(item['_id']),
+                'person_type': item['person_type'],
+                'name': item['name'],
+                'age': item['age'],
+                'contact_means': item['contact_means'],
+                'contact': item['contact'],
+                'consultation_preference': item['consultation_preference'],
+                'submission_time': item['submission_time']
+            }
 
 
 def any_key(some_dict: dict):

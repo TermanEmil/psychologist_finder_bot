@@ -52,7 +52,7 @@ def add_all_forms_to_spreadsheets():
 def _build_rows_for_all_submitted_forms():
     forms = sorted(
         get_all_submitted_forms(),
-        key=lambda x: datetime.fromisoformat(x.submission_time).astimezone(pytz.timezone('Europe/Kiev')))
+        key=lambda x: datetime.fromisoformat(x['submission_time']).astimezone(pytz.timezone('Europe/Kiev')))
 
     for form in forms:
         yield _build_row(form)

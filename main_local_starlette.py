@@ -8,7 +8,7 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
 from starlette.routing import Route
 
 from src.SubmittedForm import get_all_submitted_forms
@@ -26,8 +26,7 @@ async def main() -> None:
         return Response()
 
     async def get_all_endpoint(request: Request) -> Response:
-        forms = [asdict(form) for form in get_all_submitted_forms()]
-        return Response(json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8'), media_type='application/json')
+        return JSONResponse({'forms': list(get_all_submitted_forms())})
 
     webserver = uvicorn.Server(
         config=uvicorn.Config(
