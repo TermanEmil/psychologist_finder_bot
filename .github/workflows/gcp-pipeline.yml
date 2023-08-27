@@ -34,3 +34,4 @@ jobs:
         secret_environment_variables: |-
           TELEGRAM_BOT_TOKEN=projects/2750208003/secrets/TELEGRAM_BOT_TOKEN
           MONGO_DB_URI=projects/2750208003/secrets/MONGO_DB_URI
+          GOOGLE_SPREADSHEETS=projects/2750208003/secrets/GOOGLE_SPREADSHEETS
