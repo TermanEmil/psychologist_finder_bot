@@ -5,9 +5,9 @@ from telegram import ReplyKeyboardMarkup, Message, KeyboardButton, Update
 from telegram.error import Forbidden, BadRequest
 from telegram.ext import ContextTypes
 
-from Form import update_form, Form, find_form, delete_form
-from SubmittedForm import SubmittedForm, save_submission
-from spreadsheets import add_to_spreadsheet
+from src.Form import find_form, update_form, Form, delete_form
+from src.SubmittedForm import SubmittedForm, save_submission
+from src.spreadsheets import add_to_spreadsheet
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -18,14 +18,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     try:
-        await handle_core(update)
+        await handle_core(update, context)
     except Forbidden as e:
         print(f"Unauthorized: {e}", file=sys.stderr)
     except BadRequest as e:
         print(f"Bad request: {e}", file=sys.stderr)
 
 
-async def handle_core(update: Update):
+async def handle_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
 
     print(f"Handling message from chat_id: {message.chat_id}")

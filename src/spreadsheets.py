@@ -5,7 +5,7 @@ from datetime import datetime
 import gspread
 import pytz
 
-from SubmittedForm import SubmittedForm, get_all_submitted_forms
+from src.SubmittedForm import SubmittedForm, get_all_submitted_forms
 
 
 def build_gspread_client() -> gspread.Client:

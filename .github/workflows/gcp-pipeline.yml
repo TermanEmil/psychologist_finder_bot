@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy-gcp-function:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - uses: 'actions/checkout@v3'
+
+    - id: 'auth'
+      name: 'Authentication on Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/2750208003/locations/global/workloadIdentityPools/deployer-identity-pool/providers/github'
+        service_account: 'github-deployer@psychologist-finder-bot.iam.gserviceaccount.com'
+
+    - id: 'deploy'
+      uses: 'google-github-actions/deploy-cloud-functions@v1'
+      with:
+        name: 'bot-update-handler'
+        runtime: 'python39'
+        entry_point: 'bot_update_handler'
+        region: 'europe-central2'
+        project_id: 'psychologist-finder-bot'
+        timeout: '30'
+        max_instances: '2'
+        https_trigger_security_level: 'secure_always'
+#        secret_environment_variables: |-
+#          TELEGRAM_BOT_TOKEN=projects/28240645297/secrets/TELEGRAM_BOT_TOKEN
+#          MONGO_DB_URI=projects/28240645297/secrets/MONGO_DB_URI
