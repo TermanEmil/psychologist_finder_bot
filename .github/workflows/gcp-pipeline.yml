@@ -35,3 +35,17 @@ jobs:
           TELEGRAM_BOT_TOKEN=projects/2750208003/secrets/TELEGRAM_BOT_TOKEN
           MONGO_DB_URI=projects/2750208003/secrets/MONGO_DB_URI
           GOOGLE_SPREADSHEETS=projects/2750208003/secrets/GOOGLE_SPREADSHEETS
+
+    - id: 'deploy'
+      uses: 'google-github-actions/deploy-cloud-functions@v1'
+      with:
+        name: 'get-submissions-handler'
+        runtime: 'python39'
+        entry_point: 'get_all_submissions_handler'
+        region: 'europe-central2'
+        project_id: 'psychologist-finder-bot'
+        timeout: '200'
+        max_instances: '2'
+        https_trigger_security_level: 'secure_always'
+        secret_environment_variables: |-
+          MONGO_DB_URI=projects/2750208003/secrets/MONGO_DB_URI

@@ -25,9 +25,9 @@ async def main() -> None:
         await handle_bot_request(bot_token, message)
         return Response()
 
-    # async def get_all_endpoint(request: Request) -> Response:
-    #     forms = [asdict(form) for form in get_all_submitted_forms()]
-    #     return Response(json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8'), media_type='application/json')
+    async def get_all_endpoint(request: Request) -> Response:
+        forms = [asdict(form) for form in get_all_submitted_forms()]
+        return Response(json.dumps({'forms': forms}, ensure_ascii=False).encode('utf8'), media_type='application/json')
 
     webserver = uvicorn.Server(
         config=uvicorn.Config(
@@ -37,7 +37,7 @@ async def main() -> None:
             app=Starlette(
                 routes=[
                     Route("/telegram", telegram_endpoint, methods=["POST"]),
-                    # Route("/all", get_all_endpoint, methods=["GET"]),
+                    Route("/all", get_all_endpoint, methods=["GET"]),
                 ],
                 middleware=[
                     Middleware(CORSMiddleware, allow_origins=['*'])
