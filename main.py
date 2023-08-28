@@ -47,6 +47,10 @@ def get_all_submissions_handler(request):
             cors_header = {
                 'Access-Control-Allow-Origin': request.headers['Origin'],
             }
+        elif '*' in allowed_origins:
+            cors_header = {
+                'Access-Control-Allow-Origin': '*',
+            }
         else:
             cors_header = {}
 
