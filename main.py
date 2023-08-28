@@ -44,7 +44,7 @@ def get_all_submissions_handler(request):
 
         return {
             'statusCode': 200,
-            'body': json.dumps({'forms': list(get_all_submitted_forms())}, ensure_ascii=False).encode('utf8')
+            'body': json.dumps({'forms': list(get_all_submitted_forms())}, ensure_ascii=False)
         }
 
     return loop.run_until_complete(handle_async(request_json))
