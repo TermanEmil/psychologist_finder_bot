@@ -38,14 +38,28 @@ def get_all_submissions_handler(request):
         else:
             raise
 
-
     async def handle_async(request):
         from src.SubmittedForm import get_all_submitted_forms
 
-        return {
-            'statusCode': 200,
-            'body': json.dumps({'forms': list(get_all_submitted_forms())}, ensure_ascii=False)
-        }
+        # Set CORS headers for the preflight request
+        allowed_origins = os.getenv('ALLOWED_ORIGINS').split(':')
+        if request.headers['Origin'] in allowed_origins:
+            cors_header = {
+                'Access-Control-Allow-Origin': request.headers['Origin'],
+            }
+        else:
+            cors_header = {}
+
+        if request.method == 'OPTIONS':
+            headers = {
+                **cors_header,
+                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            }
+            return '', 204, headers
+
+        body = json.dumps({'forms': list(get_all_submitted_forms())}, ensure_ascii=False)
+        return body, 200, cors_header
 
     return loop.run_until_complete(handle_async(request_json))
 

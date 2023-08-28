@@ -49,3 +49,4 @@ jobs:
         https_trigger_security_level: 'secure_always'
         secret_environment_variables: |-
           MONGO_DB_URI=projects/2750208003/secrets/MONGO_DB_URI
+          ALLOWED_ORIGINS=projects/2750208003/secrets/ALLOWED_ORIGINS
