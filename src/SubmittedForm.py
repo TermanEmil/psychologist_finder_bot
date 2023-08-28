@@ -42,13 +42,13 @@ def get_all_submitted_forms():
 
             yield {
                 'id': str(item['_id']),
-                'person_type': item['person_type'],
-                'name': item['name'],
-                'age': item['age'],
-                'contact_means': item['contact_means'],
-                'contact': item['contact'],
-                'consultation_preference': item['consultation_preference'],
-                'submission_time': item['submission_time']
+                'person_type': str(item['person_type']),
+                'name': str(item['name']),
+                'age': int(item['age']),
+                'contact_means': str(item['contact_means']),
+                'contact': str(item['contact']),
+                'consultation_preference': str(item['consultation_preference']),
+                'submission_time': str(item['submission_time'])
             }
 
 
