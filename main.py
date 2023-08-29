@@ -43,7 +43,7 @@ def get_all_submissions_handler(request):
 
         # Set CORS headers for the preflight request
         allowed_origins = os.getenv('ALLOWED_ORIGINS').split(':')
-        if request.headers['Origin'] in allowed_origins:
+        if request and request.headers['Origin'] in allowed_origins:
             cors_header = {
                 'Access-Control-Allow-Origin': request.headers['Origin'],
             }
@@ -54,7 +54,7 @@ def get_all_submissions_handler(request):
         else:
             cors_header = {}
 
-        if request.method == 'OPTIONS':
+        if request and request.method == 'OPTIONS':
             headers = {
                 **cors_header,
                 'Access-Control-Allow-Methods': 'GET',
