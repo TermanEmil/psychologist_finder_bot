@@ -12,6 +12,9 @@ JSONDict = Dict[str, Any]
 
 
 def _extract_user_id(message_data: dict) -> Optional[int]:
+    if message_data is None:
+        return None
+
     if 'message' in message_data:
         key = 'message'
     elif 'inline_query' in message_data:
