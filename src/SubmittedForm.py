@@ -20,7 +20,6 @@ class SubmittedForm:
     contact: str
 
     consultation_preference: Optional[str] = None
-    _id: Optional[ObjectId] = None
 
     submission_time: str = datetime.now(tz=pytz.UTC).isoformat()
 
