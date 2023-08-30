@@ -40,12 +40,15 @@ async def handle_bot_request(bot_token: str, message_data: dict):
 
     application.add_handler(MessageHandler(filters.ALL, handle_message))
 
-    on_finish = lambda delta: logger.info(f'User {user_id}: Request handling finished in {delta} seconds.')
-    with Stopwatch(on_finish=on_finish):
-        async with application:
-            update = Update.de_json(data=message_data, bot=application.bot)
-            logger.info(f'Processing request: {stringify(update)}.')
-            await application.process_update(update)
+    with Stopwatch(name='application.process_update()'):
+        try:
+            async with application:
+                update = Update.de_json(data=message_data, bot=application.bot)
+                logger.info(f'Processing request: {stringify(update)}.')
+                await application.process_update(update)
+                logger.info(f'User {user_id}: Request handling finished.')
+        except Exception as e:
+            raise Exception(f'User {user_id}: Request handling failed.') from e
 
 
 async def setup_webhook(bot_token: str, url: str):
